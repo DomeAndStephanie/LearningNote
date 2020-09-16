@@ -35,3 +35,34 @@
   >
   > 退出当前Activity：onPause->onStop->onDestroy
 
+  Dialog弹出时：
+
+  > 1. 创建的dialog由于依附的Activity没有被遮挡，不会走生命周期方法
+  > 2. 跳转到一个不是全屏的Activity,onPause->onStop
+
+  横竖屏切换时：
+
+  > 1. 不设置`android:configChanges`，切屏会重新调用各个生命周期，切横屏时执行一次，切竖屏时执行两次
+  > 2. 设置`android:configChanges=“orientation"`时，切屏还是会重新调用各个生命周期，横屏和竖屏只会执行一次
+  > 3. 设置`android:configChanges="orientation|keyboardHidden"`时，切屏不会调用各个生命周期，只会执行`onConfigurationChanged`方法
+
+  锁屏与解锁屏幕
+
+  锁屏时只会调用onPause,不会调用onStop,解锁后则调用onResume
+
+- BroadcastReceiver
+
+  
+
+- Service
+
+- ContentProvider
+
+  
+
+  
+
+  
+
+  
+
