@@ -85,6 +85,16 @@
 - 锁屏与解锁时
 
   锁屏时只会调用*onPause*，不会调用*onStop*方法，解锁后调用*onResume*
+  
+- 异常退出
+
+  - Activity异常退出的生命周期：*onPause* --> *onSaveInstanceState* --> *onStop* --> *onDestroy*
+
+    > *onPause*与*onSaveInstanceState*没有严格的先后关系，可能在*onPause*前，也可能在其后，但会在*onStop*之前调用
+
+  - 异常退出又重新启动：*onCreate* --> *onStart* --> *onRestoreInstanceState* --> *onResume*
+
+  - 如果要恢复原有Activity,则在*onSaveInstanceState*中保存数据，在*onRestoreInstanceState*中进行恢复。
 
 ##### 三. 任务栈与启动模式
 
@@ -158,6 +168,62 @@
 
       如果将启动的Activity已存在于当前任务栈中，则会弹出销毁它上方的所有Activity,并调用该Activity实例的`onNewIntent`方法，而不是启动该Activity实例
 
-##### 四. 数据通信
+##### 四. 启动流程
 
-##### 五. 进程
+见[Android开发艺术探索第九章#Activity](../../Android开发艺术探索/Android开发艺术探索第九章笔记.md#Activity的工作过程)
+
+##### 五. 数据通信
+
+​		Activity之间通过Intent传递数据，Intent传递数据大小是有限制的，由于Intent底层使用了`binder`机制，所以这其实是Binder传递数据的大小。其机制中使用了一个共享内存-`Binder transaction buffer`其大小限制为`1MB`，是公用的。所以不管是一次传递大数据还是同时传递多个数据，都不能超过`1MB`
+
+##### 六. scheme跳转协议
+
+- 定义
+
+  scheme是一种页面跳转协议，通过其可以跳转到App的各个页面。可以通过scheme跳转到另一个app的页面，也可以通过H5页面跳转原生App页面
+
+- 格式
+
+  ```
+  协议名称 : // 作用地址域 : 路径端口 / 指定页面路径 ？ 传递参数
+  ```
+
+- 使用
+
+  1. 在Manifest中定义一个Scheme,进行配置
+  2. 在代码中获取Scheme跳转参数
+  3. 通过Intent或Html进行调用
+
+##### 七. Activity的管理机制
+
+![](https://upload-images.jianshu.io/upload_images/7508328-f8e1532b18ad6317.png?imageMogr2/auto-orient/strip|imageView2/2/w/494/format/webp)
+图片来自网络
+
+- AMS提供了一个mHistory来管理所有的Activity,Activity在AMS中以ActivityRecord形式存在，所有的ActivityRecord会被存储在mHistory中管理
+- Task在AMS中以TaskRecord形式存在，每个ActivityRecord对应一个TaskRecord,有相同TaskRecord的ActivityRecord在mHistory中处于连续的位置
+- 进程在AMS中的管理形式为ProcessRecord,同一个TaskRecord的Activity可能处于不同的进程中,每个Activity所处的进程和Task没有关系
+- Activity启动时ActivityManagerService会为其生成对应的ActivityRecord记录，并将其加入到回退栈(back stack)中，另外也会将ActivityRecord记录加入到某个Task中。
+
+##### 八. 进程
+
+​		共有`前台进程`，`可见进程`，`服务进程`，`后台进程`，`空进程`五种，优先级依次降低
+
+- 前台进程
+
+  用户正在交互的Activity;主动调用的前台服务
+
+- 可见进程
+
+  处于*onPause*没有进入*onStop*的Activity;绑定到前台Activity的Service
+
+- 服务进程
+
+  普通的startService
+
+- 后台进程
+
+  处于*onStop*的Activity
+
+- 空进程
+
+  没有任何活动的组件的进程，出于缓存的目的
