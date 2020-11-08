@@ -228,4 +228,9 @@ Service是一种可在后台执行长时间运行操作而不提供界面的应�
 
 ###### 2.Service与Thread的区别
 
+1. Thread是程序执行的最小单元，是分配CPU的基本单位，可以执行异步操作；Service是Android的一种机制，依托在所在的主线程运行
+2. Thread的运行是独立的，Service绑定该应用.
+
 ###### 3.IntentService
+
+详情见[IntentService](../其它/IntentService.md)
